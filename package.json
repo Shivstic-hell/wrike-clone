@@ -1,0 +1,33 @@
+{
+  "name": "wrike-clone",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Enterprise-grade open-source work management platform (Wrike-equivalent)",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "clean": "npm run clean --workspaces",
+    "lint": "npm run lint --workspaces",
+    "test": "npm run test --workspaces",
+    "test:cov": "npm run test:cov --workspaces",
+    "format": "prettier --write \"packages/*/src/**/*.{ts,tsx,js,jsx}\"",
+    "format:check": "prettier --check \"packages/*/src/**/*.{ts,tsx,js,jsx}\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:build": "docker compose -f docker/docker-compose.yml build",
+    "dev:backend": "npm run dev -w packages/backend",
+    "dev:frontend": "npm run dev -w packages/frontend"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.0",
+    "typescript": "^5.7.0",
+    "ts-node": "^10.9.2"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}

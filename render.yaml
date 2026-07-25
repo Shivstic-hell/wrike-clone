@@ -1,0 +1,28 @@
+# Render Blueprint — Wrike Clone API
+# Deploy to Render: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: wrike-clone-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm ci && npm run build -w packages/shared && npm run build -w packages/backend
+    startCommand: node packages/backend/dist/main.js
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://your-app.vercel.app
+      - key: DEFAULT_TENANT_SLUG
+        value: my-company
+      - key: ALLOW_PUBLIC_REGISTRATION
+        value: "false"
+      - key: SETUP_KEY
+        generateValue: true

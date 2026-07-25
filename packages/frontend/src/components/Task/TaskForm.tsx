@@ -1,0 +1,219 @@
+import { useState, type FormEvent } from 'react';
+import { TASK_STATUS, TASK_PRIORITY } from '../../api/enums';
+import type { Task, CreateTaskRequest } from '@wrike-clone/shared';
+
+interface TaskFormProps {
+  initialValues?: Partial<Task>;
+  projectId?: string;
+  onSubmit: (values: Partial<Task> | CreateTaskRequest) => Promise<void>;
+  onCancel?: () => void;
+  isSubmitting?: boolean;
+}
+
+const statusOptions: { value: string; label: string }[] = [
+  { value: TASK_STATUS.BACKLOG, label: 'Backlog' },
+  { value: TASK_STATUS.TODO, label: 'To Do' },
+  { value: TASK_STATUS.IN_PROGRESS, label: 'In Progress' },
+  { value: TASK_STATUS.IN_REVIEW, label: 'In Review' },
+  { value: TASK_STATUS.DONE, label: 'Done' },
+  { value: TASK_STATUS.CANCELLED, label: 'Cancelled' },
+];
+
+const priorityOptions: { value: string; label: string }[] = [
+  { value: TASK_PRIORITY.NONE, label: 'None' },
+  { value: TASK_PRIORITY.LOW, label: 'Low' },
+  { value: TASK_PRIORITY.MEDIUM, label: 'Medium' },
+  { value: TASK_PRIORITY.HIGH, label: 'High' },
+  { value: TASK_PRIORITY.URGENT, label: 'Urgent' },
+];
+
+export function TaskForm({
+  initialValues,
+  projectId,
+  onSubmit,
+  onCancel,
+  isSubmitting = false,
+}: TaskFormProps) {
+  const [title, setTitle] = useState(initialValues?.title || '');
+  const [description, setDescription] = useState(initialValues?.description || '');
+  const [status, setStatus] = useState<string>(initialValues?.status || TASK_STATUS.TODO);
+  const [priority, setPriority] = useState<string>(initialValues?.priority || TASK_PRIORITY.MEDIUM);
+  const [assigneeId, setAssigneeId] = useState(initialValues?.assigneeId || '');
+  const [estimatedHours, setEstimatedHours] = useState<number | null>(
+    initialValues?.estimatedHours ?? null,
+  );
+  const [startDate, setStartDate] = useState(initialValues?.startDate?.split('T')[0] || '');
+  const [dueDate, setDueDate] = useState(initialValues?.dueDate?.split('T')[0] || '');
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    await onSubmit({
+      ...(initialValues?.id ? { id: initialValues.id } : {}),
+      title: title.trim(),
+      description: description.trim() || undefined,
+      status: status as Task['status'],
+      priority: priority as Task['priority'],
+      assigneeId: assigneeId || undefined,
+      estimatedHours: estimatedHours ?? undefined,
+      startDate: startDate ? new Date(startDate).toISOString() : undefined,
+      dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+      projectId: projectId || initialValues?.projectId,
+    } as Partial<Task>);
+  };
+
+  const inputClasses =
+    'block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder-slate-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:bg-slate-50 disabled:text-slate-500';
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="title" className="label">
+          Title <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="title"
+          type="text"
+          className={inputClasses}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Task title"
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="description" className="label">
+          Description
+        </label>
+        <textarea
+          id="description"
+          rows={4}
+          className={`${inputClasses} resize-none`}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Add a description..."
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="status" className="label">
+            Status
+          </label>
+          <select
+            id="status"
+            className={inputClasses}
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            {statusOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="priority" className="label">
+            Priority
+          </label>
+          <select
+            id="priority"
+            className={inputClasses}
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+          >
+            {priorityOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="startDate" className="label">
+            Start date
+          </label>
+          <input
+            id="startDate"
+            type="date"
+            className={inputClasses}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="dueDate" className="label">
+            Due date
+          </label>
+          <input
+            id="dueDate"
+            type="date"
+            className={inputClasses}
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="assigneeId" className="label">
+            Assignee ID
+          </label>
+          <input
+            id="assigneeId"
+            type="text"
+            className={inputClasses}
+            value={assigneeId}
+            onChange={(e) => setAssigneeId(e.target.value)}
+            placeholder="User ID"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="estimatedHours" className="label">
+            Estimated hours
+          </label>
+          <input
+            id="estimatedHours"
+            type="number"
+            min={0}
+            step={0.5}
+            className={inputClasses}
+            value={estimatedHours ?? ''}
+            onChange={(e) => setEstimatedHours(e.target.value ? Number(e.target.value) : null)}
+            placeholder="0"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3 pt-2">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="btn-secondary"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={!title.trim() || isSubmitting}
+          className="btn-primary"
+        >
+          {isSubmitting ? 'Saving...' : initialValues?.id ? 'Update task' : 'Create task'}
+        </button>
+      </div>
+    </form>
+  );
+}
