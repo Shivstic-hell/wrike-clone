@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "packages/backend/dist",
+  "buildCommand": "cd packages/shared && npm run build && cd ../backend && npm run build",
+  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/(.*)",
